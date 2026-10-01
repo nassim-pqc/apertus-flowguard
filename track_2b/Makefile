@@ -1,6 +1,13 @@
-.PHONY: run
+.PHONY: run test
 
-# Replace with the command that starts the project in a Docker container,
-# e.g. `docker compose up`. It must work from a clean checkout.
+IMAGE := apertus-flowguard:local
+
 run:
-	@echo "make run is not implemented yet — edit this Makefile"; exit 1
+	docker build --tag $(IMAGE) .
+	docker run --rm \
+		--env LLM_NAME --env LLM_BASE_URL --env LLM_API_KEY \
+		--env FLOWGUARD_QUESTION --env FLOWGUARD_INPUT_JSON \
+		$(IMAGE)
+
+test:
+	python3 -m unittest discover -s src -p 'test_*.py' -v
