@@ -1,0 +1,4 @@
+# The image only needs Python modules from src/.
+*
+!src/
+!src/*.py
