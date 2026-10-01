@@ -4,7 +4,7 @@
 - Event: Hack Apertus Online 2026
 - Entrant: individual participant based in France
 - Demo: not yet recorded; a video of at most two minutes is required for submission
-- Status: local prototype with Docker structured demo verified; live Apertus inference still requires verification
+- Status: clean-clone Docker structured demo verified; live Apertus inference still requires verification
 
 ## 1. Summary
 
@@ -47,11 +47,11 @@ Apertus extraction can misread language; an exact quote and numeric/unit consist
 
 ## 7. Reproducibility
 
-From repository root, `make test` runs 15 targeted numerical, domain, transport and extraction checks using Python 3. `make run` built and ran the synthetic demo in Docker on 1 October 2026; no secret was required. The default case has no stochastic component. The application is dependency-free beyond Python's standard library. For natural-language inference, record the exact Apertus model checkpoint, serving stack, endpoint location and prompt revision. No repository commit has been frozen yet; record it when preparing the submission. A clean-checkout Docker run is still required.
+From repository root, `make test` runs 15 targeted numerical, domain, transport and extraction checks using Python 3. A fresh clone of the public repository at commit `0c1b16b` passed these tests and `make run` built and ran the synthetic demo in Docker on 1 October 2026; no secret was required. The default case has no stochastic component. The application is dependency-free beyond Python's standard library. For natural-language inference, record the exact Apertus model checkpoint, serving stack, endpoint location and prompt revision. The final submission commit has not yet been frozen.
 
 ## 8. Next steps
 
-Run the frozen French and English benchmark against the actual Apertus endpoint; inspect extraction errors; repeat the benchmark on an untouched second set; compare estimated pressure with independent measured capillary data; quantify model discrepancy and calibration; test an on-premise deployment and a clean-checkout `make run`.
+Run the frozen French and English benchmark against the actual Apertus endpoint; inspect extraction errors; repeat the benchmark on an untouched second set; compare estimated pressure with independent measured capillary data; quantify model discrepancy and calibration; test an on-premise Apertus deployment.
 
 ## License
 
