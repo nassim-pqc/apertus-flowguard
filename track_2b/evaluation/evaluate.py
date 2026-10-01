@@ -147,6 +147,7 @@ def evaluate(mode: str) -> dict:
             "n_cases": len(rows),
             "decision_accuracy": sum(row["decision_correct"] for row in rows) / len(rows),
             "unsafe_acceptances": sum(row["unsafe_acceptance"] for row in invalid),
+            "n_errors": sum(row["status"] == "error" for row in rows),
             "n_invalid": len(invalid),
             "valid_within_2pct": sum(row["valid_within_2pct"] for row in valid),
             "n_valid": len(valid),

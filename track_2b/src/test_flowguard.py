@@ -10,6 +10,7 @@ from unittest.mock import patch
 from src.apertus_client import ExtractionError, _endpoint, _unit_is_quoted, _validate_extraction
 from src.app import DEMO_INPUT
 from src.flowguard import analyze_question, solve_pipe
+from evaluation.evaluate import _prediction
 
 
 class PipeModelTests(unittest.TestCase):
@@ -140,6 +141,16 @@ class ExtractionTests(unittest.TestCase):
         self.assertEqual(result["status"], "ok")
         self.assertAlmostEqual(result["results"]["pressure_drop_pa"], 3395.3054526, places=4)
         self.assertNotIn("test-only-key", json.dumps(result))
+
+    def test_client_failure_on_invalid_case_is_scored_as_error(self):
+        case = {"id": "offline", "class": "invalid", "question": "gas",
+                "expected_status": "refused", "expected_pressure_drop_pa": None,
+                "expected_reynolds": None}
+        with patch("src.apertus_client.extract_quantities", side_effect=ExtractionError("offline")):
+            row = _prediction(case, "workflow")
+        self.assertEqual(row["status"], "error")
+        self.assertFalse(row["decision_correct"])
+        self.assertFalse(row["unsafe_acceptance"])
 
 
 if __name__ == "__main__":

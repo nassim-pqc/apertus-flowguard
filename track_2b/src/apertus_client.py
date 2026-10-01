@@ -53,6 +53,10 @@ class ExtractionError(Exception):
     """Configuration, transport, or schema failure with a safe user message."""
 
 
+class AssumptionError(ExtractionError):
+    """A model claim conflicts with the question's explicit physical assumptions."""
+
+
 def _endpoint(base_url: str) -> str:
     parsed = urllib.parse.urlparse(base_url)
     if parsed.scheme not in {"http", "https"} or not parsed.netloc or parsed.username or parsed.password or parsed.query or parsed.fragment:
@@ -113,33 +117,33 @@ def _validate_explicit_assumptions(payload: dict[str, Any], question: str) -> No
     """Independent textual red flags; ambiguity yields refusal, not a guess."""
     if payload["fluid_kind"] == "liquid":
         if not re.search(r"\b(?:liquid|liquide)\b", question, re.IGNORECASE):
-            raise ExtractionError("Le caractère liquide n'est pas explicitement déclaré.")
+            raise AssumptionError("Le caractère liquide n'est pas explicitement déclaré.")
         if re.search(r"\b(?:gas|gaz|air|steam|vapeur)\b", question, re.IGNORECASE):
-            raise ExtractionError("Le texte mentionne aussi un gaz ou de l'air.")
+            raise AssumptionError("Le texte mentionne aussi un gaz ou de l'air.")
     if payload["newtonian"] is True:
         if re.search(r"\b(?:non[- ]?newtonian|non[- ]?newtonien(?:ne)?|not\s+newtonian|shear[- ]?thinning|rhéofluidifiant)\b", question, re.IGNORECASE):
-            raise ExtractionError("Le texte décrit un fluide non newtonien.")
+            raise AssumptionError("Le texte décrit un fluide non newtonien.")
         if not re.search(r"\b(?:newtonian|newtonien(?:ne)?)\b", question, re.IGNORECASE):
-            raise ExtractionError("Le caractère newtonien n'est pas explicitement déclaré.")
+            raise AssumptionError("Le caractère newtonien n'est pas explicitement déclaré.")
     if payload["incompressible"] is True:
         if not re.search(r"\bincompressible\b", question, re.IGNORECASE) or re.search(r"\b(?:not|non|pas)\s+incompressible\b", question, re.IGNORECASE):
-            raise ExtractionError("L'incompressibilité n'est pas explicitement établie.")
+            raise AssumptionError("L'incompressibilité n'est pas explicitement établie.")
     if payload["straight_circular_tube"] is True:
         if _NONCIRCULAR_RE.search(question):
-            raise ExtractionError("Le texte mentionne une géométrie non circulaire.")
+            raise AssumptionError("Le texte mentionne une géométrie non circulaire.")
         if not (re.search(r"\b(?:tube|pipe|capillary|capillaire)\b", question, re.IGNORECASE)
                 and re.search(r"\b(?:straight|droit|droite|rectiligne)\b", question, re.IGNORECASE)
                 and re.search(r"\b(?:circular|circulaire|cylindrique)\b", question, re.IGNORECASE)):
-            raise ExtractionError("Tube droit circulaire non explicitement établi.")
+            raise AssumptionError("Tube droit circulaire non explicitement établi.")
     if payload["inner_diameter"] is not None:
         if not _INNER_DIAMETER_RE.search(question):
-            raise ExtractionError("Diamètre intérieur non explicitement mesuré.")
+            raise AssumptionError("Diamètre intérieur non explicitement mesuré.")
         if _OUTER_DIAMETER_RE.search(question):
             quote = payload["inner_diameter"]["evidence"]
             if _OUTER_DIAMETER_RE.search(quote) or not _INNER_DIAMETER_RE.search(quote):
-                raise ExtractionError("Diamètre extérieur présent : citation du diamètre intérieur requise.")
+                raise AssumptionError("Diamètre extérieur présent : citation du diamètre intérieur requise.")
     if payload["minor_losses_present"] is False and not _accessories_explicitly_absent(question):
-        raise ExtractionError("Absence de raccords ou pertes singulières non établie.")
+        raise AssumptionError("Absence de raccords ou pertes singulières non établie.")
 
 
 def _validate_extraction(payload: Any, question: str) -> dict[str, Any]:

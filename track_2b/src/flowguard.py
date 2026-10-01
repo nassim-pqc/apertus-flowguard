@@ -194,12 +194,14 @@ def solve_pipe(inputs: Mapping[str, Any]) -> dict[str, Any]:
 
 def analyze_question(question: str) -> dict[str, Any]:
     """Extract explicit quantities with Apertus, then apply the fixed physics gate."""
-    from .apertus_client import ExtractionError, extract_quantities
+    from .apertus_client import AssumptionError, ExtractionError, extract_quantities
 
     try:
         extracted, model_name = extract_quantities(question)
+    except AssumptionError as exc:
+        return _refuse("unsafe_assumption", str(exc))
     except ExtractionError as exc:
-        return _refuse("extraction_error", str(exc))
+        return {"status": "error", "reason_code": "extraction_error", "reason": str(exc)}
     result = solve_pipe(extracted)
     result["extraction"] = {
         "model": model_name,
